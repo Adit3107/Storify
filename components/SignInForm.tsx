@@ -7,10 +7,17 @@ import { useSignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { z } from "zod";
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
-import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
-import { Divider } from "@heroui/divider";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Mail, Lock, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { signInSchema } from "@/schemas/signInSchema";
 
@@ -56,7 +63,7 @@ export default function SignInForm() {
       console.error("Sign-in error:", error);
       setAuthError(
         error.errors?.[0]?.message ||
-          "An error occurred during sign-in. Please try again."
+        "An error occurred during sign-in. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -64,19 +71,19 @@ export default function SignInForm() {
   };
 
   return (
-    <Card className="w-full max-w-md border border-default-200 bg-default-50 shadow-xl">
+    <Card className="w-full max-w-md border border-border bg-card shadow-xl">
       <CardHeader className="flex flex-col gap-1 items-center pb-2">
-        <h1 className="text-2xl font-bold text-default-900">Welcome Back</h1>
-        <p className="text-default-500 text-center">
+        <CardTitle className="text-2xl font-bold text-foreground">Welcome Back</CardTitle>
+        <CardDescription className="text-muted-foreground text-center">
           Sign in to access your secure cloud storage
-        </p>
+        </CardDescription>
       </CardHeader>
 
-      <Divider />
+      <Separator className="my-4" />
 
-      <CardBody className="py-6">
+      <CardContent className="py-6">
         {authError && (
-          <div className="bg-danger-50 text-danger-700 p-4 rounded-lg mb-6 flex items-center gap-2">
+          <div className="bg-destructive/10 text-destructive p-4 rounded-lg mb-6 flex items-center gap-2">
             <AlertCircle className="h-5 w-5 flex-shrink-0" />
             <p>{authError}</p>
           </div>
@@ -86,7 +93,7 @@ export default function SignInForm() {
           <div className="space-y-2">
             <label
               htmlFor="identifier"
-              className="text-sm font-medium text-default-900"
+              className="text-sm font-medium text-foreground"
             >
               Email
             </label>
@@ -94,7 +101,7 @@ export default function SignInForm() {
               id="identifier"
               type="email"
               placeholder="your.email@example.com"
-              startContent={<Mail className="h-4 w-4 text-default-500" />}
+              startContent={<Mail className="h-4 w-4 text-muted-foreground" />}
               isInvalid={!!errors.identifier}
               errorMessage={errors.identifier?.message}
               {...register("identifier")}
@@ -106,7 +113,7 @@ export default function SignInForm() {
             <div className="flex justify-between items-center">
               <label
                 htmlFor="password"
-                className="text-sm font-medium text-default-900"
+                className="text-sm font-medium text-foreground"
               >
                 Password
               </label>
@@ -115,19 +122,19 @@ export default function SignInForm() {
               id="password"
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
-              startContent={<Lock className="h-4 w-4 text-default-500" />}
+              startContent={<Lock className="h-4 w-4 text-muted-foreground" />}
               endContent={
                 <Button
-                  isIconOnly
-                  variant="light"
-                  size="sm"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
                   type="button"
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-default-500" />
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <Eye className="h-4 w-4 text-default-500" />
+                    <Eye className="h-4 w-4 text-muted-foreground" />
                   )}
                 </Button>
               }
@@ -140,19 +147,18 @@ export default function SignInForm() {
 
           <Button
             type="submit"
-            color="primary"
             className="w-full"
             isLoading={isSubmitting}
           >
             {isSubmitting ? "Signing in..." : "Sign In"}
           </Button>
         </form>
-      </CardBody>
+      </CardContent>
 
-      <Divider />
+      <Separator className="my-4" />
 
       <CardFooter className="flex justify-center py-4">
-        <p className="text-sm text-default-600">
+        <p className="text-sm text-muted-foreground">
           Don't have an account?{" "}
           <Link
             href="/sign-up"

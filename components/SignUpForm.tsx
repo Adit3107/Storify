@@ -1,16 +1,23 @@
 "use client";
 
-import { SetStateAction, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSignUp } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { z } from "zod";
-import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
-import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
-import { Divider } from "@heroui/divider";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import {
   Mail,
   Lock,
@@ -65,7 +72,7 @@ export default function SignUpForm() {
       console.error("Sign-up error:", error);
       setAuthError(
         error.errors?.[0]?.message ||
-          "An error occurred during sign-up. Please try again."
+        "An error occurred during sign-up. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -99,7 +106,7 @@ export default function SignUpForm() {
       console.error("Verification error:", error);
       setVerificationError(
         error.errors?.[0]?.message ||
-          "An error occurred during verification. Please try again."
+        "An error occurred during verification. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -108,21 +115,21 @@ export default function SignUpForm() {
 
   if (verifying) {
     return (
-      <Card className="w-full max-w-md border border-default-200 bg-default-50 shadow-xl">
+      <Card className="w-full max-w-md border border-border bg-card shadow-xl">
         <CardHeader className="flex flex-col gap-1 items-center pb-2">
-          <h1 className="text-2xl font-bold text-default-900">
+          <CardTitle className="text-2xl font-bold text-foreground">
             Verify Your Email
-          </h1>
-          <p className="text-default-500 text-center">
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-center">
             We've sent a verification code to your email
-          </p>
+          </CardDescription>
         </CardHeader>
 
-        <Divider />
+        <Separator className="my-4" />
 
-        <CardBody className="py-6">
+        <CardContent className="py-6">
           {verificationError && (
-            <div className="bg-danger-50 text-danger-700 p-4 rounded-lg mb-6 flex items-center gap-2">
+            <div className="bg-destructive/10 text-destructive p-4 rounded-lg mb-6 flex items-center gap-2">
               <AlertCircle className="h-5 w-5 flex-shrink-0" />
               <p>{verificationError}</p>
             </div>
@@ -132,7 +139,7 @@ export default function SignUpForm() {
             <div className="space-y-2">
               <label
                 htmlFor="verificationCode"
-                className="text-sm font-medium text-default-900"
+                className="text-sm font-medium text-foreground"
               >
                 Verification Code
               </label>
@@ -141,7 +148,7 @@ export default function SignUpForm() {
                 type="text"
                 placeholder="Enter the 6-digit code"
                 value={verificationCode}
-                onChange={(e: { target: { value: SetStateAction<string>; }; }) => setVerificationCode(e.target.value)}
+                onChange={(e) => setVerificationCode(e.target.value)}
                 className="w-full"
                 autoFocus
               />
@@ -149,7 +156,6 @@ export default function SignUpForm() {
 
             <Button
               type="submit"
-              color="primary"
               className="w-full"
               isLoading={isSubmitting}
             >
@@ -158,7 +164,7 @@ export default function SignUpForm() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-default-500">
+            <p className="text-sm text-muted-foreground">
               Didn't receive a code?{" "}
               <button
                 onClick={async () => {
@@ -174,27 +180,27 @@ export default function SignUpForm() {
               </button>
             </p>
           </div>
-        </CardBody>
+        </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="w-full max-w-md border border-default-200 bg-default-50 shadow-xl">
+    <Card className="w-full max-w-md border border-border bg-card shadow-xl">
       <CardHeader className="flex flex-col gap-1 items-center pb-2">
-        <h1 className="text-2xl font-bold text-default-900">
+        <CardTitle className="text-2xl font-bold text-foreground">
           Create Your Account
-        </h1>
-        <p className="text-default-500 text-center">
+        </CardTitle>
+        <CardDescription className="text-muted-foreground text-center">
           Sign up to start managing your images securely
-        </p>
+        </CardDescription>
       </CardHeader>
 
-      <Divider />
+      <Separator className="my-4" />
 
-      <CardBody className="py-6">
+      <CardContent className="py-6">
         {authError && (
-          <div className="bg-danger-50 text-danger-700 p-4 rounded-lg mb-6 flex items-center gap-2">
+          <div className="bg-destructive/10 text-destructive p-4 rounded-lg mb-6 flex items-center gap-2">
             <AlertCircle className="h-5 w-5 flex-shrink-0" />
             <p>{authError}</p>
           </div>
@@ -204,7 +210,7 @@ export default function SignUpForm() {
           <div className="space-y-2">
             <label
               htmlFor="email"
-              className="text-sm font-medium text-default-900"
+              className="text-sm font-medium text-foreground"
             >
               Email
             </label>
@@ -212,7 +218,7 @@ export default function SignUpForm() {
               id="email"
               type="email"
               placeholder="your.email@example.com"
-              startContent={<Mail className="h-4 w-4 text-default-500" />}
+              startContent={<Mail className="h-4 w-4 text-muted-foreground" />}
               isInvalid={!!errors.email}
               errorMessage={errors.email?.message}
               {...register("email")}
@@ -223,7 +229,7 @@ export default function SignUpForm() {
           <div className="space-y-2">
             <label
               htmlFor="password"
-              className="text-sm font-medium text-default-900"
+              className="text-sm font-medium text-foreground"
             >
               Password
             </label>
@@ -231,19 +237,19 @@ export default function SignUpForm() {
               id="password"
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
-              startContent={<Lock className="h-4 w-4 text-default-500" />}
+              startContent={<Lock className="h-4 w-4 text-muted-foreground" />}
               endContent={
                 <Button
-                  isIconOnly
-                  variant="light"
-                  size="sm"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
                   type="button"
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-default-500" />
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <Eye className="h-4 w-4 text-default-500" />
+                    <Eye className="h-4 w-4 text-muted-foreground" />
                   )}
                 </Button>
               }
@@ -257,7 +263,7 @@ export default function SignUpForm() {
           <div className="space-y-2">
             <label
               htmlFor="passwordConfirmation"
-              className="text-sm font-medium text-default-900"
+              className="text-sm font-medium text-foreground"
             >
               Confirm Password
             </label>
@@ -265,19 +271,19 @@ export default function SignUpForm() {
               id="passwordConfirmation"
               type={showConfirmPassword ? "text" : "password"}
               placeholder="••••••••"
-              startContent={<Lock className="h-4 w-4 text-default-500" />}
+              startContent={<Lock className="h-4 w-4 text-muted-foreground" />}
               endContent={
                 <Button
-                  isIconOnly
-                  variant="light"
-                  size="sm"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 hover:bg-transparent"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   type="button"
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4 text-default-500" />
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <Eye className="h-4 w-4 text-default-500" />
+                    <Eye className="h-4 w-4 text-muted-foreground" />
                   )}
                 </Button>
               }
@@ -291,7 +297,7 @@ export default function SignUpForm() {
           <div className="space-y-4">
             <div className="flex items-start gap-2">
               <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
-              <p className="text-sm text-default-600">
+              <p className="text-sm text-muted-foreground">
                 By signing up, you agree to our Terms of Service and Privacy
                 Policy
               </p>
@@ -300,19 +306,18 @@ export default function SignUpForm() {
 
           <Button
             type="submit"
-            color="primary"
             className="w-full"
             isLoading={isSubmitting}
           >
             {isSubmitting ? "Creating account..." : "Create Account"}
           </Button>
         </form>
-      </CardBody>
+      </CardContent>
 
-      <Divider />
+      <Separator className="my-4" />
 
       <CardFooter className="flex justify-center py-4">
-        <p className="text-sm text-default-600">
+        <p className="text-sm text-muted-foreground">
           Already have an account?{" "}
           <Link
             href="/sign-in"
