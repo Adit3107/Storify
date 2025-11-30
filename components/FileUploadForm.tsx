@@ -195,7 +195,7 @@ export default function FileUploadForm({
           className="flex-1"
         >
           <FileUp className="h-4 w-4 mr-2" />
-          Add Image
+          Add File
         </Button>
       </div>
 
@@ -204,10 +204,10 @@ export default function FileUploadForm({
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${error
-            ? "border-destructive/30 bg-destructive/5"
-            : file
-              ? "border-primary/30 bg-primary/5"
-              : "border-muted-foreground/20 hover:border-primary/50"
+          ? "border-destructive/30 bg-destructive/5"
+          : file
+            ? "border-primary/30 bg-primary/5"
+            : "border-muted-foreground/20 hover:border-primary/50"
           }`}
       >
         {!file ? (
@@ -215,7 +215,7 @@ export default function FileUploadForm({
             <FileUp className="h-12 w-12 mx-auto text-primary/70" />
             <div>
               <p className="text-muted-foreground">
-                Drag and drop your image here, or{" "}
+                Drag and drop your file here, or{" "}
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
@@ -224,14 +224,14 @@ export default function FileUploadForm({
                   browse
                 </button>
               </p>
-              <p className="text-xs text-muted-foreground mt-1">Images up to 5MB</p>
+              <p className="text-xs text-muted-foreground mt-1">Files up to 5MB</p>
             </div>
             <Input
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
               className="hidden"
-              accept="image/*"
+            // accept="image/*,application/pdf"
             />
           </div>
         ) : (
@@ -286,7 +286,7 @@ export default function FileUploadForm({
               disabled={!!error}
             >
               {!uploading && <Upload className="h-4 w-4 mr-2" />}
-              {uploading ? `Uploading... ${progress}%` : "Upload Image"}
+              {uploading ? `Uploading... ${progress}%` : "Upload File"}
               {!uploading && <ArrowRight className="h-4 w-4 ml-2" />}
             </Button>
           </div>
@@ -298,7 +298,7 @@ export default function FileUploadForm({
         <h4 className="text-sm font-medium mb-2">Tips</h4>
         <ul className="text-xs text-muted-foreground space-y-1">
           <li>• Images are private and only visible to you</li>
-          <li>• Supported formats: JPG, PNG, GIF, WebP</li>
+          <li>• Supported formats: All files (Images, PDF, PPTX, TXT, Code, etc.)</li>
           <li>• Maximum file size: 5MB</li>
         </ul>
       </div>

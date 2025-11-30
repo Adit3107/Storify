@@ -25,6 +25,7 @@ import {
   CheckCircle,
   Eye,
   EyeOff,
+  User,
 } from "lucide-react";
 import { signUpSchema } from "@/schemas/signUpSchema";
 
@@ -48,6 +49,8 @@ export default function SignUpForm() {
   } = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
+      firstName: "",
+      lastName: "",
       email: "",
       password: "",
       passwordConfirmation: "",
@@ -62,6 +65,8 @@ export default function SignUpForm() {
 
     try {
       await signUp.create({
+        firstName: data.firstName,
+        lastName: data.lastName,
         emailAddress: data.email,
         password: data.password,
       });
@@ -207,6 +212,45 @@ export default function SignUpForm() {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="firstName"
+                className="text-sm font-medium text-foreground"
+              >
+                First Name
+              </label>
+              <Input
+                id="firstName"
+                type="text"
+                placeholder="John"
+                startContent={<User className="h-4 w-4 text-muted-foreground" />}
+                isInvalid={!!errors.firstName}
+                errorMessage={errors.firstName?.message}
+                {...register("firstName")}
+                className="w-full"
+              />
+            </div>
+            <div className="space-y-2">
+              <label
+                htmlFor="lastName"
+                className="text-sm font-medium text-foreground"
+              >
+                Last Name
+              </label>
+              <Input
+                id="lastName"
+                type="text"
+                placeholder="Doe"
+                startContent={<User className="h-4 w-4 text-muted-foreground" />}
+                isInvalid={!!errors.lastName}
+                errorMessage={errors.lastName?.message}
+                {...register("lastName")}
+                className="w-full"
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <label
               htmlFor="email"

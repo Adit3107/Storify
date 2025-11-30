@@ -55,13 +55,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Only allow image uploads
-    if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
-      return NextResponse.json(
-        { error: "Only image files are supported" },
-        { status: 400 }
-      );
-    }
+    // Allow all file types - restriction removed
 
     const buffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(buffer);
@@ -72,8 +66,8 @@ export async function POST(request: NextRequest) {
 
     // Create folder path based on parent folder if exists
     const folderPath = parentId
-      ? `/droply/${userId}/folders/${parentId}`
-      : `/droply/${userId}`;
+      ? `/storify/${userId}/folders/${parentId}`
+      : `/storify/${userId}`;
 
     const uploadResponse = await imagekit.upload({
       file: fileBuffer,

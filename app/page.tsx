@@ -26,7 +26,7 @@ export default function Home() {
               <div className="space-y-6 text-center lg:text-left">
                 <div>
                   <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground leading-tight">
-                    Store your <span className="text-primary">images</span> with
+                    Store your <span className="text-primary">Files</span> with
                     ease
                   </h1>
                   <p className="text-lg md:text-xl text-muted-foreground">
@@ -65,7 +65,7 @@ export default function Home() {
                 <div className="relative w-64 h-64 md:w-80 md:h-80">
                   <div className="absolute inset-0 bg-primary/10 rounded-full blur-3xl"></div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <ImageIcon className="h-24 md:h-32 w-24 md:w-32 text-primary/70" />
+                    <ImageIcon className="h-24 md:h-48 w-24 md:w-48 text-primary/70" />
                   </div>
                 </div>
               </div>
@@ -160,10 +160,10 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
               <CloudUpload className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-bold">Droply</h2>
+              <h2 className="text-lg font-bold">Storify</h2>
             </div>
             <p className="text-muted-foreground text-sm">
-              &copy; {new Date().getFullYear()} Droply
+              &copy; {new Date().getFullYear()} Storify
             </p>
           </div>
         </div>

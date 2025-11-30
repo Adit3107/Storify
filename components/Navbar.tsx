@@ -136,7 +136,7 @@ export default function Navbar({ user }: NavbarProps) {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 z-10">
             <CloudUpload className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold">Droply</h1>
+            <h1 className="text-xl font-bold">Storify</h1>
           </Link>
 
           {/* Desktop Navigation */}

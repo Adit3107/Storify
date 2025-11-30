@@ -136,8 +136,8 @@ export default function UserProfile() {
               }
               variant="flat"
               aria-label={`Email verification status: ${user.emailAddresses?.[0]?.verification?.status === "verified"
-                  ? "Verified"
-                  : "Pending"
+                ? "Verified"
+                : "Pending"
                 }`}
             >
               {user.emailAddresses?.[0]?.verification?.status === "verified"
@@ -148,10 +148,11 @@ export default function UserProfile() {
         </div>
       </CardContent>
       <Separator />
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex justify-center pb-6">
         <Button
           variant="destructive"
           onClick={handleSignOut}
+          className="w-full mt-4"
         >
           <LogOut className="h-4 w-4 mr-2" />
           Sign Out

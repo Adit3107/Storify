@@ -1,5 +1,5 @@
 /**
- * Database Connection for Droply
+ * Database Connection for Storify
  *
  * This file sets up the connection to our Neon PostgreSQL database using Drizzle ORM.
  * We're using the HTTP-based driver which is optimized for serverless environments.

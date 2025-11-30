@@ -17,7 +17,7 @@ export default function SignUpPage() {
       <footer className="bg-gray-900 text-white py-4">
         <div className="container mx-auto px-6 text-center">
           <p className="text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} Droply. All rights reserved.
+            &copy; {new Date().getFullYear()} Storify. All rights reserved.
           </p>
         </div>
       </footer>

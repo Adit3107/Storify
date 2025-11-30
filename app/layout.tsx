@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Droply",
+  title: "Storify",
   description: "Secure cloud storage for your images, powered by ImageKit",
 };
 
