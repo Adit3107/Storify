@@ -3,8 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { files } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import archiver from "archiver";
-import axios from "axios";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const archiver = require("archiver");
 
 export async function GET(request: NextRequest, context: { params: Promise<{ folderId: string }> }) {
   try {
@@ -72,8 +72,10 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fol
         if (!file.fileUrl) continue;
         try {
           // Fetch the file from ImageKit
-          const response = await axios.get(file.fileUrl, { responseType: 'stream' });
-          archive.append(response.data, { name: file.name });
+          const response = await fetch(file.fileUrl);
+          if (!response.ok || !response.body) throw new Error(`Failed to fetch ${file.name}`);
+          const arrayBuffer = await response.arrayBuffer();
+          archive.append(Buffer.from(arrayBuffer), { name: file.name });
         } catch (error) {
           console.error(`Failed to download ${file.name} for zip:`, error);
           // Continue with other files even if one fails
