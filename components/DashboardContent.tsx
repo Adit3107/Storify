@@ -12,6 +12,7 @@ import { FileUp, FileText, User } from "lucide-react";
 import FileUploadForm from "@/components/FileUploadForm";
 import FileList from "@/components/FileList";
 import UserProfile from "@/components/UserProfile";
+import StorageUsage from "@/components/StorageUsage";
 import { useSearchParams } from "next/navigation";
 
 interface DashboardContentProps {
@@ -96,6 +97,7 @@ export default function DashboardContent({
                   />
                 </CardContent>
               </Card>
+              <StorageUsage refreshTrigger={refreshTrigger} />
             </div>
 
             <div className="lg:col-span-2">

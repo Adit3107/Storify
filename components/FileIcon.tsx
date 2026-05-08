@@ -21,8 +21,8 @@ interface FileIconProps {
 export default function FileIcon({ file }: FileIconProps) {
   if (file.isFolder) return <Folder className="h-5 w-5 text-blue-500" />;
 
-  const fileType = file.type.split("/")[0];
-  const extension = file.name.split(".").pop()?.toLowerCase() || "";
+  const fileType = file.type ? file.type.split("/")[0] : "";
+  const extension = file.name ? file.name.split(".").pop()?.toLowerCase() || "" : "";
 
   // Image handling with preview
   if (fileType === "image") {
