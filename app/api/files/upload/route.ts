@@ -3,15 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { files } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import ImageKit from "imagekit";
+import imagekit from "@/lib/imagekit";
 import { v4 as uuidv4 } from "uuid";
-
-// Initialize ImageKit with your credentials
-const imagekit = new ImageKit({
-  publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || "",
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
-  urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "",
-});
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,6 +46,14 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         );
       }
+    }
+
+    // Server-side validation for upload size (100MB)
+    if (file.size > 100 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: "File size exceeds 100MB limit" },
+        { status: 400 }
+      );
     }
 
     // Allow all file types - restriction removed

@@ -33,9 +33,10 @@ export default function FileUploadForm({
   onUploadSuccess,
   currentFolder = null,
 }: FileUploadFormProps) {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [currentFileIndex, setCurrentFileIndex] = useState(-1);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -45,33 +46,33 @@ export default function FileUploadForm({
   const [creatingFolder, setCreatingFolder] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-
-      // Validate file size (5MB limit)
-      if (selectedFile.size > 5 * 1024 * 1024) {
-        setError("File size exceeds 5MB limit");
-        return;
+    if (e.target.files && e.target.files.length > 0) {
+      const selectedFiles = Array.from(e.target.files);
+      const validFiles = selectedFiles.filter(f => f.size <= 100 * 1024 * 1024);
+      
+      if (validFiles.length < selectedFiles.length) {
+        setError("Some files exceeded the 100MB limit and were skipped");
+      } else {
+        setError(null);
       }
 
-      setFile(selectedFile);
-      setError(null);
+      setFiles(prev => [...prev, ...validFiles]);
     }
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const droppedFile = e.dataTransfer.files[0];
-
-      // Validate file size (5MB limit)
-      if (droppedFile.size > 5 * 1024 * 1024) {
-        setError("File size exceeds 5MB limit");
-        return;
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      const validFiles = droppedFiles.filter(f => f.size <= 100 * 1024 * 1024);
+      
+      if (validFiles.length < droppedFiles.length) {
+        setError("Some files exceeded the 100MB limit and were skipped");
+      } else {
+        setError(null);
       }
 
-      setFile(droppedFile);
-      setError(null);
+      setFiles(prev => [...prev, ...validFiles]);
     }
   };
 
@@ -79,62 +80,74 @@ export default function FileUploadForm({
     e.preventDefault();
   };
 
-  const clearFile = () => {
-    setFile(null);
+  const clearFiles = () => {
+    setFiles([]);
     setError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
+  
+  const removeFile = (indexToRemove: number) => {
+    setFiles(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  };
 
   const handleUpload = async () => {
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("userId", userId);
-    if (currentFolder) {
-      formData.append("parentId", currentFolder);
-    }
+    if (files.length === 0) return;
 
     setUploading(true);
-    setProgress(0);
     setError(null);
 
-    try {
-      await axios.post("/api/files/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            setProgress(percentCompleted);
-          }
-        },
-      });
+    let successCount = 0;
 
-      toast.success("Upload Successful", {
-        description: `${file.name} has been uploaded successfully.`,
-      });
-
-      // Clear the file after successful upload
-      clearFile();
-
-      // Call the onUploadSuccess callback if provided
-      if (onUploadSuccess) {
-        onUploadSuccess();
+    // Upload files sequentially for reliability
+    for (let i = 0; i < files.length; i++) {
+      setCurrentFileIndex(i);
+      setProgress(0);
+      
+      const currentFile = files[i];
+      const formData = new FormData();
+      formData.append("file", currentFile);
+      formData.append("userId", userId);
+      if (currentFolder) {
+        formData.append("parentId", currentFolder);
       }
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      setError("Failed to upload file. Please try again.");
-      toast.error("Upload Failed", {
-        description: "We couldn't upload your file. Please try again.",
+
+      try {
+        await axios.post("/api/files/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              setProgress(percentCompleted);
+            }
+          },
+        });
+        successCount++;
+      } catch (error) {
+        console.error(`Error uploading file ${currentFile.name}:`, error);
+        toast.error(`Upload Failed: ${currentFile.name}`, {
+          description: "We couldn't upload this file.",
+        });
+        // Continue with the next file even if one fails
+      }
+    }
+
+    setUploading(false);
+    setCurrentFileIndex(-1);
+
+    if (successCount > 0) {
+      toast.success("Upload Complete", {
+        description: `Successfully uploaded ${successCount} of ${files.length} files.`,
       });
-    } finally {
-      setUploading(false);
+      clearFiles();
+      if (onUploadSuccess) onUploadSuccess();
+    } else {
+      setError("Failed to upload all files. Please try again.");
     }
   };
 
@@ -203,14 +216,14 @@ export default function FileUploadForm({
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
-        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${error
+        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${error && files.length === 0
           ? "border-destructive/30 bg-destructive/5"
-          : file
+          : files.length > 0
             ? "border-primary/30 bg-primary/5"
             : "border-muted-foreground/20 hover:border-primary/50"
           }`}
       >
-        {!file ? (
+        {files.length === 0 ? (
           <div className="space-y-3">
             <FileUp className="h-12 w-12 mx-auto text-primary/70" />
             <div>
@@ -224,71 +237,99 @@ export default function FileUploadForm({
                   browse
                 </button>
               </p>
-              <p className="text-xs text-muted-foreground mt-1">Files up to 5MB</p>
+              <p className="text-xs text-muted-foreground mt-1">Files up to 100MB</p>
             </div>
-            <Input
+              <Input
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
               className="hidden"
-            // accept="image/*,application/pdf"
+              multiple
             />
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-primary/10 rounded-md">
-                  <FileUp className="h-5 w-5 text-primary" />
+          <div className="space-y-4">
+            <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
+              {files.map((f, idx) => (
+                <div key={idx} className="flex items-center justify-between bg-background p-2 rounded border">
+                  <div className="flex items-center space-x-3 overflow-hidden">
+                    <div className="p-1.5 bg-primary/10 rounded-md shrink-0">
+                      <FileUp className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="text-left overflow-hidden">
+                      <p className="text-sm font-medium truncate max-w-[150px] sm:max-w-[200px]">
+                        {f.name}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-muted-foreground">
+                          {f.size < 1024
+                            ? `${f.size} B`
+                            : f.size < 1024 * 1024
+                              ? `${(f.size / 1024).toFixed(1)} KB`
+                              : `${(f.size / (1024 * 1024)).toFixed(1)} MB`}
+                        </p>
+                        {uploading && currentFileIndex === idx && (
+                          <span className="text-xs font-semibold text-primary">{progress}%</span>
+                        )}
+                        {uploading && currentFileIndex > idx && (
+                          <span className="text-xs font-semibold text-green-500">Done</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {!uploading && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeFile(idx)}
+                      className="text-muted-foreground hover:text-destructive shrink-0 h-8 w-8"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
-                <div className="text-left">
-                  <p className="text-sm font-medium truncate max-w-[180px]">
-                    {file.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {file.size < 1024
-                      ? `${file.size} B`
-                      : file.size < 1024 * 1024
-                        ? `${(file.size / 1024).toFixed(1)} KB`
-                        : `${(file.size / (1024 * 1024)).toFixed(1)} MB`}
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={clearFile}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              ))}
             </div>
+            
+            {uploading && (
+              <div className="space-y-1 text-left">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Uploading file {currentFileIndex + 1} of {files.length}</span>
+                  <span>{progress}%</span>
+                </div>
+                <Progress
+                  value={progress}
+                  className="w-full h-2"
+                />
+              </div>
+            )}
 
             {error && (
               <div className="bg-destructive/10 text-destructive p-3 rounded-lg flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="text-sm">{error}</span>
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <span className="text-sm text-left">{error}</span>
               </div>
             )}
 
-            {uploading && (
-              <Progress
-                value={progress}
-                showValueLabel={true}
-                className="w-full"
-              />
-            )}
-
-            <Button
-              onClick={handleUpload}
-              isLoading={uploading}
-              className="w-full"
-              disabled={!!error}
-            >
-              {!uploading && <Upload className="h-4 w-4 mr-2" />}
-              {uploading ? `Uploading... ${progress}%` : "Upload File"}
-              {!uploading && <ArrowRight className="h-4 w-4 ml-2" />}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={clearFiles}
+                disabled={uploading}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpload}
+                isLoading={uploading}
+                className="flex-1"
+                disabled={uploading}
+              >
+                {uploading ? "Uploading..." : `Upload ${files.length} File${files.length > 1 ? "s" : ""}`}
+                {!uploading && <ArrowRight className="h-4 w-4 ml-2" />}
+              </Button>
+            </div>
           </div>
         )}
       </div>
@@ -299,7 +340,7 @@ export default function FileUploadForm({
         <ul className="text-xs text-muted-foreground space-y-1">
           <li>• Images are private and only visible to you</li>
           <li>• Supported formats: All files (Images, PDF, PPTX, TXT, Code, etc.)</li>
-          <li>• Maximum file size: 5MB</li>
+          <li>• Maximum file size: 100MB</li>
         </ul>
       </div>
 

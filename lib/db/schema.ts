@@ -34,7 +34,7 @@ export const files = pgTable("files", {
   type: text("type").notNull(), // MIME type for files, "folder" for folders
 
   // Storage information
-  fileUrl: text("file_url").notNull(), // URL to access the file
+  fileUrl: text("file_url"), // URL to access the file (null for folders)
   thumbnailUrl: text("thumbnail_url"), // Optional thumbnail for images/documents
 
   // Ownership and hierarchy
@@ -45,6 +45,8 @@ export const files = pgTable("files", {
   isFolder: boolean("is_folder").default(false).notNull(), // Whether this is a folder
   isStarred: boolean("is_starred").default(false).notNull(), // Starred/favorite items
   isTrash: boolean("is_trash").default(false).notNull(), // Items in trash
+
+
 
   // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),
