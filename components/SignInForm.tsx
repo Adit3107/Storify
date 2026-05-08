@@ -7,6 +7,7 @@ import { useSignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { z } from "zod";
+import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,7 +34,7 @@ import {
   forgotPasswordResetSchema,
 } from "@/schemas/forgotPasswordSchema";
 
-type FormState = "SIGN_IN" | "FORGOT_PASSWORD_EMAIL" | "FORGOT_PASSWORD_RESET";
+type FormState = "SIGN_IN" | "FORGOT_PASSWORD_EMAIL" | "FORGOT_PASSWORD_RESET" | "TWO_FACTOR";
 
 export default function SignInForm() {
   const router = useRouter();
@@ -44,6 +45,7 @@ export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+  const [twoFactorCode, setTwoFactorCode] = useState("");
 
   // Sign In Form
   const {
@@ -99,6 +101,8 @@ export default function SignInForm() {
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
         router.push("/dashboard");
+      } else if (result.status === "needs_second_factor") {
+        setFormState("TWO_FACTOR");
       } else {
         console.error("Sign-in incomplete:", result);
         setAuthError("Sign-in could not be completed. Please try again.");
@@ -178,6 +182,118 @@ export default function SignInForm() {
       setIsSubmitting(false);
     }
   };
+
+  const onTwoFactorSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLoaded || !signIn) return;
+
+    setIsSubmitting(true);
+    setAuthError(null);
+
+    try {
+      const result = await signIn.attemptSecondFactor({
+        strategy: "totp",
+        code: twoFactorCode,
+      });
+
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        router.push("/dashboard");
+      } else {
+        console.error("2FA incomplete:", result);
+        setAuthError("Two-factor verification could not be completed.");
+      }
+    } catch (error: any) {
+      console.error("2FA error:", error);
+      setAuthError(
+        error.errors?.[0]?.message ||
+        "Invalid verification code. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Render: Two-Factor Authentication
+  if (formState === "TWO_FACTOR") {
+    return (
+      <Card className="w-full max-w-md border border-border bg-card shadow-xl">
+        <CardHeader className="flex flex-col gap-1 items-center pb-2">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+            <ShieldCheck className="h-6 w-6 text-primary" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-foreground">
+            Two-Factor Authentication
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-center">
+            Enter the 6-digit code from your authenticator app
+          </CardDescription>
+        </CardHeader>
+
+        <Separator className="my-4" />
+
+        <CardContent className="py-6">
+          {authError && (
+            <div className="bg-destructive/10 text-destructive p-4 rounded-lg mb-6 flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 flex-shrink-0" />
+              <p>{authError}</p>
+            </div>
+          )}
+
+          <form onSubmit={onTwoFactorSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label
+                htmlFor="totp-code"
+                className="text-sm font-medium text-foreground"
+              >
+                Verification Code
+              </label>
+              <Input
+                id="totp-code"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="Enter 6-digit code"
+                startContent={
+                  <KeyRound className="h-4 w-4 text-muted-foreground" />
+                }
+                value={twoFactorCode}
+                onChange={(e) => setTwoFactorCode(e.target.value)}
+                className="w-full"
+                autoFocus
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              isLoading={isSubmitting}
+              disabled={twoFactorCode.length < 6}
+            >
+              {isSubmitting ? "Verifying..." : "Verify"}
+            </Button>
+          </form>
+        </CardContent>
+
+        <Separator className="my-4" />
+
+        <CardFooter className="flex justify-center py-4">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setFormState("SIGN_IN");
+              setAuthError(null);
+              setTwoFactorCode("");
+            }}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Sign In
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
 
   // Render: Forgot Password - Email Input
   if (formState === "FORGOT_PASSWORD_EMAIL") {
